@@ -127,13 +127,8 @@ def evaluate(X, Y, P, W, b, mu_W=None, mu_b=None):
 	return accuracy(Y_pred, Y)
 
 
-dataM = [(x[0], x[1], Ratings[x]) for x in Ratings if all('m'+f in Ratings[x] for f in attrs)]
-dataW = [(x[0], x[1], Ratings[x]) for x in Ratings if all('w'+f in Ratings[x] for f in attrs)]
+trainM, testM, trainW, testW = readData()
 
-random.shuffle(dataM)
-random.shuffle(dataW)
-
-trainM, testM = dataM[:len(dataM)*9/10], dataM[len(dataM)*9/10:]
-trainW, testW = dataW[:len(dataW)*9/10], dataW[len(dataW)*9/10:]
+# Matrices = cPickle.load(open("mf_trainM.pkl","rb"))
 
 mu_W, mu_b, W, b = hard_EM(trainM, testM)

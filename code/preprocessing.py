@@ -1,4 +1,6 @@
 import csv
+import cPickle
+import random
 
 mean = lambda x : sum(x) * 1. / len(x)
 var  = lambda x : mean([t**2 for t in x]) - mean(x) ** 2
@@ -6,7 +8,7 @@ MSE = lambda true, pred: sum((a-b)**2 * 1. /len(true)  for a,b in zip(true,pred)
 accuracy = lambda x, x_: sum(t == t_ for t, t_ in zip(x, x_)) * 1. / len(x)
 attrs = ['attr', 'sinc', 'fun', 'amb', 'intel', 'shar']
 
-def readData(path):
+def readRaw(path):
 
 	def isNumeric(s):
 		s = s.split('.')
@@ -58,5 +60,29 @@ def formatData(data, scheme, ischeme):
 
 	return M, W, R
 
-data, scheme, ischeme = readData('../data/raw/speed_dating_data.csv')
-Men, Women, Ratings = formatData(data, scheme, ischeme)
+def splitData(Ratings, train_prop=0.9):
+	dataM = [(x[0], x[1], Ratings[x]) for x in Ratings if all('m'+f in Ratings[x] for f in attrs)]
+	dataW = [(x[0], x[1], Ratings[x]) for x in Ratings if all('w'+f in Ratings[x] for f in attrs)]
+
+	random.shuffle(dataM)
+	random.shuffle(dataW)
+
+	splitM = int(len(dataM) * train_prop)
+	splitW = int(len(dataW) * train_prop)
+
+	trainM, testM = dataM[:splitM], dataM[splitM:]
+	trainW, testW = dataW[:splitW], dataW[splitW:]
+
+	DM = {"train":trainM, "test":testM}
+	cPickle.dump(DM, open("dataM.pkl","wb"))
+
+	DW = {"train":trainW, "test":testW}
+	cPickle.dump(DW, open("dataW.pkl","wb"))
+
+def readData():
+	DM = cPickle.load(open("dataM.pkl","rb"))
+	DW = cPickle.load(open("dataW.pkl","rb"))
+	return DM["train"], DM["test"], DW["train"], DW["test"]
+
+# data, scheme, ischeme = readRaw('../data/raw/speed_dating_data.csv')
+# Men, Women, Ratings = formatData(data, scheme, ischeme)
