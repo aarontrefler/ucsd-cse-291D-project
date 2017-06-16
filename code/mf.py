@@ -3,8 +3,12 @@
 # An implementation of matrix factorization
 #
 # Altered by Aaron Trefler (2016)
+#
+# Altered by Wangmuge Qin (2016)
 
 import numpy as np
+import collections
+from preprocessing import *
 
 """
 @INPUT:
@@ -18,7 +22,8 @@ import numpy as np
 @OUTPUT:
     the final matrices P and Q
 """
-def matrix_factorization(R, P, Q, K, steps=5000, alpha=0.0002, beta=0.02, verbose=0, output_dir='.'):
+def matrix_factorization(R, P, Q, K, steps=5000, alpha=0.0002, beta=0.02, verbose=0,output_dir='.'):
+    
     Q = Q.T
     for step in range(steps):
         for i in range(len(R)):
@@ -41,6 +46,7 @@ def matrix_factorization(R, P, Q, K, steps=5000, alpha=0.0002, beta=0.02, verbos
         if (verbose > 0):
             print("step:", step, "error", e)
         
+        """
         if (step % 10 == 0):
             np.savetxt((output_dir + "/P.txt"), P, delimiter=',')
             np.savetxt((output_dier + "/Q.txt"), Q.T, delimiter=',')
@@ -50,7 +56,33 @@ def matrix_factorization(R, P, Q, K, steps=5000, alpha=0.0002, beta=0.02, verbos
             fh.write(str(e))
             fh.write("\n")
             fh.close()
-        
+        """
+
         if e < 0.001:
             break
     return P, Q.T
+
+
+def get_latent_vector(train, gender='m', K=2):
+	pair = lambda m,w: (m,w) if gender == 'm' else (w,m)
+	waves = collections.defaultdict(dict)
+	for m, w, d in train:
+		wid = int(m[0])
+		m, w = int(m[1]), int(w[1])
+		waves[wid][pair(m,w)] = 1 if d[gender+'dec'] == 1 else -1
+
+	R, P, Q = {}, {}, {}
+	for wid in waves:
+		print "wave %d" % wid
+		N_rater = int(max(a for a,b in waves[wid]))
+		N_ratee = int(max(b for a,b in waves[wid]))
+		print "%d by %d" % (N_rater, N_ratee)
+		R[wid] = np.zeros(shape=(N_rater,N_ratee))
+		P[wid] = np.random.uniform(low=-1,high=1,size=(N_rater,K))
+		Q[wid] = np.random.uniform(low=-1,high=1,size=(N_ratee,K))
+		for (a,b),d in waves[wid].items():
+			R[wid][a-1,b-1] = d
+		P[wid], Q[wid] = matrix_factorization(R[wid], P[wid], Q[wid], K)
+	return R, P, Q
+
+# R, P, Q = get_latent_vector(trainM)
