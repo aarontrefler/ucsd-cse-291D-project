@@ -18,7 +18,7 @@ import numpy as np
 @OUTPUT:
     the final matrices P and Q
 """
-def matrix_factorization(R, P, Q, K, steps=5000, alpha=0.0002, beta=0.02, verbose=0):
+def matrix_factorization(R, P, Q, K, steps=5000, alpha=0.0002, beta=0.02, verbose=0, output_dir='.'):
     Q = Q.T
     for step in range(steps):
         for i in range(len(R)):
@@ -28,6 +28,7 @@ def matrix_factorization(R, P, Q, K, steps=5000, alpha=0.0002, beta=0.02, verbos
                     for k in range(K):
                         P[i][k] = P[i][k] + alpha * (2 * eij * Q[k][j] - beta * P[i][k])
                         Q[k][j] = Q[k][j] + alpha * (2 * eij * P[i][k] - beta * Q[k][j])
+        
         #eR = np.dot(P,Q)
         e = 0
         for i in range(len(R)):
@@ -41,9 +42,9 @@ def matrix_factorization(R, P, Q, K, steps=5000, alpha=0.0002, beta=0.02, verbos
             print("step:", step, "error", e)
         
         if (step % 10 == 0):
-            np.savetxt("../../models/mf/P.txt", P, delimiter=',')
-            np.savetxt("../../models/mf/Q.txt", Q.T, delimiter=',')
-            fh = open("../../models/mf/error.txt","a+")
+            np.savetxt((output_dir + "/P.txt"), P, delimiter=',')
+            np.savetxt((output_dier + "/Q.txt"), Q.T, delimiter=',')
+            fh = open((output_dir + "/error.txt", "a+")
             fh.write(str(step))
             fh.write(", ")
             fh.write(str(e))
